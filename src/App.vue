@@ -1,20 +1,20 @@
 <template>
-  <div id="app">
-    <img src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js + TypeScript App"/>
+  <div id="app" scroll=no>
+    <Main />
   </div>
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
-import HelloWorld from './components/HelloWorld.vue';
+import Vue from 'vue'
+import HelloWorld from './components/HelloWorld.vue'
+import Main from './components/Main.vue'
 
 export default Vue.extend({
   name: 'app',
   components: {
-    HelloWorld,
+    Main,
   },
-});
+})
 </script>
 
 <style>
@@ -24,6 +24,6 @@ export default Vue.extend({
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
+  margin: 0;
 }
 </style>
