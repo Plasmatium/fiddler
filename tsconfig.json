@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "target": "es2015",
-    "module": "es2015",
+    "target": "esnext",
+    "module": "esnext",
     "strict": true,
     "jsx": "preserve",
     "moduleResolution": "node",
@@ -15,7 +15,8 @@
       "@/*": [
         "src/*"
       ]
-    }
+    },
+    "skipLibCheck": true
   },
   "include": [
     "src/**/*.ts",
@@ -23,6 +24,6 @@
     "tests/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules/**/*"
   ]
 }
