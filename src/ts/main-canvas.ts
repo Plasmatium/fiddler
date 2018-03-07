@@ -9,7 +9,8 @@ export function getCV () {
 }
 
 export function get2dCtx () {
-  const ctx = getCV()
+  const cv = getCV()
+  const ctx = cv.getContext('2d')
   if (!ctx) { throw Error('can not get 2d context') }
   return ctx
 }

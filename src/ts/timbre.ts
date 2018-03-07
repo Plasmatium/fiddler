@@ -11,36 +11,31 @@ export class Chord {
   public gain: GainNode[] = []
   public oscs: OscillatorNode[] = []
   public $pitch: number = 0
-  constructor (public pitch: number) {
+  constructor (private basePtich: number) {
     this.amp = actx.createGain()
-    this.amp.gain.value = 0
+    this.amp.gain.setValueAtTime(0, actx.currentTime)
     // this.envelope = actx.createGain()
     // this.envelope.gain.value = 0
 
     for (let i = 0; i < $$gain.length; i++) {
-      const freq = $$baseFreq * ($$k ** pitch) * (i + 1)
+      const freq = $$baseFreq * ($$k ** basePtich) * (i + 1)
 
       this.oscs[i] = actx.createOscillator()
-      this.oscs[i].frequency.value = freq
+      this.oscs[i].frequency.setValueAtTime(freq, actx.currentTime)
 
       this.gain[i] = actx.createGain()
-      this.gain[i].gain.value = $$gain[i]
+      this.gain[i].gain.setValueAtTime($$gain[i], actx.currentTime)
 
       this.oscs[i].connect(this.gain[i])
       this.gain[i].connect(this.amp)
       this.amp.connect(actx.destination)
     }
   }
-  set detune (pitch: number) {
+  set pitch (pitch: number) {
     this.$pitch = pitch
-    this.setChord(pitch)
+    this.setPitch(pitch)
   }
-  public setChord (pitch: number) {
-    for (let i = 0; i < $$gain.length; i++) {
-      const freq = $$baseFreq * ($$k ** pitch)
-      this.oscs[i].frequency.value = freq
-    }
-  }
+  get pitch () { return this.$pitch }
   public setAmp (newGain: number, startTime: number, timeConstant: number) {
     if (newGain > 0.5) { newGain = 0.5 }
     this.amp.gain.setTargetAtTime(newGain, startTime, timeConstant)
@@ -58,5 +53,11 @@ export class Chord {
     this.oscs.forEach((osc) => {
       osc.stop(actx.currentTime)
     })
+  }
+  private setPitch (pitch: number) {
+    for (let i = 0; i < $$gain.length; i++) {
+      const freq = $$baseFreq * ($$k ** pitch) * (i + 1)
+      this.oscs[i].frequency.setValueAtTime(freq, actx.currentTime)
+    }
   }
 }
