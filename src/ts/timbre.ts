@@ -1,5 +1,7 @@
 const actx = new AudioContext()
 
+export const getAudioCtx = () => actx
+
 const $$gain = [1, 0.92, 0.2, 0.1, 0.12, 0.03, 0.01] // 提琴音色
 const $$k = 2 ** (1 / 12)
 const $$baseFreq = 440
@@ -39,10 +41,13 @@ export class Chord {
       this.oscs[i].frequency.value = freq
     }
   }
-  public setAmp (newGain: number) {
-    // this.amp.gain.setTargetAtTime(newGain, actx.currentTime, 0.016)
+  public setAmp (newGain: number, startTime: number, timeConstant: number) {
     if (newGain > 0.5) { newGain = 0.5 }
-    this.amp.gain.value = newGain
+    this.amp.gain.setTargetAtTime(newGain, startTime, timeConstant)
+  }
+  public silent (soft: boolean) {
+    const timeConstant = soft ? 0.01 : 0.004
+    this.amp.gain.setTargetAtTime(0, actx.currentTime, timeConstant)
   }
   public start () {
     this.oscs.forEach((osc) => {
