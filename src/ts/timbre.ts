@@ -41,6 +41,7 @@ export class Chord {
   }
   public setAmp (newGain: number) {
     // this.amp.gain.setTargetAtTime(newGain, actx.currentTime, 0.016)
+    if (newGain > 0.5) { newGain = 0.5 }
     this.amp.gain.value = newGain
   }
   public start () {
