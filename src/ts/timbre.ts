@@ -1,4 +1,5 @@
-const actx = new AudioContext()
+const $W = window as any
+const actx = new ($W.AudioContext || $W.webkitAudioContext)()
 
 export const getAudioCtx = () => actx
 
@@ -12,6 +13,7 @@ export class Chord {
   public gain: GainNode[] = []
   public oscs: OscillatorNode[] = []
   public $pitch = 0
+  public started = false
   constructor (private basePtich: number) {
     this.amp = actx.createGain()
     this.amp.gain.setValueAtTime(0, actx.currentTime)
@@ -44,6 +46,8 @@ export class Chord {
     this.amp.gain.setTargetAtTime(0, actx.currentTime, soft)
   }
   public start () {
+    if (this.started) { return }
+    this.started = true
     this.oscs.forEach((osc) => {
       osc.start(actx.currentTime + 0.5)
     })

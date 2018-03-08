@@ -19,7 +19,6 @@ const {sqrt, abs, log} = Math
 const actx = getAudioCtx()
 
 let _tmp: any
-
 // const step = [3,5,7,8,10,12,14]
 // -------------[1,2,3,4,5 ,6 ,7 ]
 const tuneList = [
@@ -42,13 +41,11 @@ export default Vue.extend({
       squareSpeed: 'squareSpeed: ' + (0).toFixed(6).padStart(12, '_'),
       released: true,
       pluckInXDir: true,
-      tune: new Tune(tuneList2, -1),
+      tune: new Tune(tuneList, 0),
+      chordA: new Chord(-12)
     }
   },
   methods: {
-    changePluckDir () {
-      this.pluckInXDir = !this.pluckInXDir
-    },
   },
   mounted () {
     const cv = getCV()
@@ -60,8 +57,7 @@ export default Vue.extend({
     /**
      * handle chords
      */
-    const chordA = new Chord(-12)
-    chordA.start()
+    const {chordA} = this
 
     /**
      * handle touch event
@@ -77,7 +73,15 @@ export default Vue.extend({
       const event = e as TouchEvent
       event.preventDefault()
     })
-    cv.addEventListener('touchstart', (e) => { e.preventDefault() })
+    cv.addEventListener('touchstart', (e) => {
+      // 如果还没开始播放，那么不能prevent，否则下面那个click就失效了
+      // 而之所以要用click来start，是因为iPad上的音乐start只能在click里正确触发
+      this.chordA.started && e.preventDefault()
+    })
+    cv.addEventListener('click', (e) => {
+      this.chordA.start()
+      console.log('osc start!')
+    })
 
     let newTouchStartPosition: Touch | null
     const deltaMove$ = touchMove$
@@ -147,7 +151,7 @@ export default Vue.extend({
         chordA.setPitch(pitch, switchSoft)
       }
       chordA.setAmp(intensity, startTime, timeConstant)
-      // drawCurve(intensity, fillStyle)
+      drawCurve(intensity, fillStyle)
 
       this.squareSpeed = 'squareSpeed: ' + squareSpeed.toFixed(6).padStart(12, '_')
       // 速度需要回落到0
