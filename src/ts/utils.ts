@@ -12,7 +12,7 @@ export function genFuncDrawCurve () {
   const barTotal = floor(cv.width / barInterval)
   return function drawCurve (val: number, fillStyle: string) {
     const x = barCount * barInterval
-    const y = cv.height - (log(val) * 50 + 200)
+    const y = cv.height - 50 - (log(val) / log(10) + 3) * 150
     const h = 1000
     const w = barWidth
     ctx.fillStyle = fillStyle
@@ -38,13 +38,13 @@ export function drawCircle (x: number, y: number, color: string) {
 
 export class Tune {
   private position = 0
-  constructor (private chordList: number[]) {
+  constructor (private chordList: number[], private octave = 0) {
   }
   public nextChord () {
     if (this.position === this.chordList.length) {
       this.position = 0
     }
-    const next = this.chordList[this.position]
+    const next = this.chordList[this.position] + this.octave * 12
     this.position++
     return next
   }

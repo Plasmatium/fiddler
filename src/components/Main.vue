@@ -15,7 +15,7 @@ import {getCV, get2dCtx} from '../ts/main-canvas'
 import {Chord, getAudioCtx} from '../ts/timbre'
 import {genFuncDrawCurve, drawCircle, Tune} from '../ts/utils'
 
-const {sqrt, abs} = Math
+const {sqrt, abs, log} = Math
 const actx = getAudioCtx()
 
 let _tmp: any
@@ -29,6 +29,11 @@ const tuneList = [
   7, 7, 7, 5, 7, 12, 10, 7, 5, 7, 12, 10,
   12, 14, 15, 10, 7, 10, 12, 10, 7, 5, 3, -2, 5, 3,
 ]
+const tuneList2 = [
+  /*0, */0, 0, 0, 2, 3, 2, 3, 2, 3, 2,
+  0, 0, 0, 0, 2, 3, 2, 3, 2, 3, 2,
+  -2, -2, -2, -2, -2, 3, -2, 3, -2, 3, 5, 5,
+]
 
 export default Vue.extend({
   name: 'Main',
@@ -37,7 +42,7 @@ export default Vue.extend({
       squareSpeed: 'squareSpeed: ' + (0).toFixed(6).padStart(12, '_'),
       released: true,
       pluckInXDir: true,
-      tune: new Tune(tuneList),
+      tune: new Tune(tuneList2, -1),
     }
   },
   methods: {
@@ -100,8 +105,8 @@ export default Vue.extend({
         newTouchStartPosition = null
       }
       
-      drawCircle(pluckTouch0.pageX, pluckTouch0.pageY, '#fff')
-      drawCircle(pluckTouch1.pageX, pluckTouch1.pageY, '#84c')
+      // drawCircle(pluckTouch0.pageX, pluckTouch0.pageY, '#fff')
+      // drawCircle(pluckTouch1.pageX, pluckTouch1.pageY, '#84c')
 
       const vx = pluckTouch1.pageX - pluckTouch0.pageX
       const vy = pluckTouch1.pageY - pluckTouch0.pageY
@@ -124,31 +129,32 @@ export default Vue.extend({
 
       const squareSpeed = this.pluckInXDir ? v1.vx * v1.vx : v1.vy * v1.vy
 
-      let intensity = sqrt(squareSpeed) + 0.1
+      let intensity = squareSpeed / 30000 + 0.0003
       let timeConstant = 0.4
       let startTime = actx.currentTime
       let fillStyle = '#48c'
 
       if (!this.released && redirect) {
         // 来回扯，应力没有释放，音断，音强增加
-        intensity = intensity + 1.25 ** (intensity + 1)
-        timeConstant = 1 / intensity
+        const switchSoft = (1 - (log(intensity) + 8.2) / 7.73) * 0.03 + 0.003
+        timeConstant = switchSoft
         startTime += 0.01
-        chordA.silent(false)
+        chordA.silent(0.003)
         fillStyle = '#c84'
 
-        chordA.pitch = this.tune.nextChord()
-        console.log(intensity.toFixed(3), timeConstant.toFixed(3))
+        const pitch = this.tune.nextChord()
+        console.log(intensity.toFixed(3), switchSoft.toFixed(3))
+        chordA.setPitch(pitch, switchSoft)
       }
-      chordA.setAmp(intensity / 100, startTime, timeConstant)
-      drawCurve(intensity, fillStyle)
+      chordA.setAmp(intensity, startTime, timeConstant)
+      // drawCurve(intensity, fillStyle)
 
       this.squareSpeed = 'squareSpeed: ' + squareSpeed.toFixed(6).padStart(12, '_')
       // 速度需要回落到0
       window.clearTimeout(timerID)
       timerID = window.setTimeout(() => {
         this.squareSpeed = 'squareSpeed: ' + (0).toFixed(6).padStart(12, '_')
-        chordA.silent(true)
+        chordA.silent(0.01)
         this.released = true
       }, 50)
     })

@@ -2,7 +2,8 @@ const actx = new AudioContext()
 
 export const getAudioCtx = () => actx
 
-const $$gain = [1, 0.92, 0.2, 0.1, 0.12, 0.03, 0.01] // 提琴音色
+// const $$gain = [1, 0.92, 0.04, 0.1, 0.12, 0.03, 0.01] // 提琴音色 (0+, 1+)
+const $$gain = [1, 0.92, 0.04, 0.1, 0.03, 0.03, 0.01] // 提琴音色 (-2+, 1+, 2+) OK!!!
 const $$k = 2 ** (1 / 12)
 const $$baseFreq = 440
 
@@ -10,7 +11,7 @@ export class Chord {
   public amp: GainNode
   public gain: GainNode[] = []
   public oscs: OscillatorNode[] = []
-  public $pitch: number = 0
+  public $pitch = 0
   constructor (private basePtich: number) {
     this.amp = actx.createGain()
     this.amp.gain.setValueAtTime(0, actx.currentTime)
@@ -31,18 +32,16 @@ export class Chord {
       this.amp.connect(actx.destination)
     }
   }
-  set pitch (pitch: number) {
-    this.$pitch = pitch
-    this.setPitch(pitch)
-  }
-  get pitch () { return this.$pitch }
   public setAmp (newGain: number, startTime: number, timeConstant: number) {
-    if (newGain > 0.5) { newGain = 0.5 }
+    if (newGain > 0.5) {
+      newGain = 0.5
+    }
+    if (timeConstant < 0) { timeConstant = 0 }
     this.amp.gain.setTargetAtTime(newGain, startTime, timeConstant)
   }
-  public silent (soft: boolean) {
-    const timeConstant = soft ? 0.01 : 0.004
-    this.amp.gain.setTargetAtTime(0, actx.currentTime, timeConstant)
+  public silent (soft: number) {
+    if (soft < 0) { soft = 0 }
+    this.amp.gain.setTargetAtTime(0, actx.currentTime, soft)
   }
   public start () {
     this.oscs.forEach((osc) => {
@@ -54,10 +53,11 @@ export class Chord {
       osc.stop(actx.currentTime)
     })
   }
-  private setPitch (pitch: number) {
+  public setPitch (pitch: number, soft = 0) {
     for (let i = 0; i < $$gain.length; i++) {
       const freq = $$baseFreq * ($$k ** pitch) * (i + 1)
-      this.oscs[i].frequency.setValueAtTime(freq, actx.currentTime)
+      if (soft < 0) { soft = 0 }
+      this.oscs[i].frequency.setTargetAtTime(freq, actx.currentTime, soft)
     }
   }
 }
