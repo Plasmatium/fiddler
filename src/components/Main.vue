@@ -15,24 +15,13 @@ import {getCV, get2dCtx} from '../ts/main-canvas'
 import {Chord, getAudioCtx} from '../ts/timbre'
 import {genFuncDrawCurve, drawCircle, Tune} from '../ts/utils'
 
+import {tunes} from '../ts/tunes'
+
 const {sqrt, abs, log} = Math
 const actx = getAudioCtx()
 
 let _tmp: any
-// const step = [3,5,7,8,10,12,14]
-// -------------[1,2,3,4,5 ,6 ,7 ]
-const tuneList = [
-  10, 12, 10, 7, 10, 7, 5, 3, -2, 0, 3, 5, 10, 7,
-  10, 12, 10, 7, 10, 7, 5, 3, -2, 0, 3, -2, 5, 3,
-  -2, 0, 2, 3, 5,
-  7, 7, 7, 5, 7, 12, 10, 7, 5, 7, 12, 10,
-  12, 14, 15, 10, 7, 10, 12, 10, 7, 5, 3, -2, 5, 3,
-]
-const tuneList2 = [
-  /*0, */0, 0, 0, 2, 3, 2, 3, 2, 3, 2,
-  0, 0, 0, 0, 2, 3, 2, 3, 2, 3, 2,
-  -2, -2, -2, -2, -2, 3, -2, 3, -2, 3, 5, 5,
-]
+
 
 export default Vue.extend({
   name: 'Main',
@@ -41,7 +30,7 @@ export default Vue.extend({
       squareSpeed: 'squareSpeed: ' + (0).toFixed(6).padStart(12, '_'),
       released: true,
       pluckInXDir: true,
-      tune: new Tune(tuneList, 0),
+      tune: new Tune(tunes['bach1'], 0),
       chordA: new Chord(-12)
     }
   },
@@ -133,7 +122,7 @@ export default Vue.extend({
 
       const squareSpeed = this.pluckInXDir ? v1.vx * v1.vx : v1.vy * v1.vy
 
-      let intensity = squareSpeed / 30000 + 0.0003
+      let intensity = squareSpeed / 30000 + 0.005
       let timeConstant = 0.4
       let startTime = actx.currentTime
       let fillStyle = '#48c'
