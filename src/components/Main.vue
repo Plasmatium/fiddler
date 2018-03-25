@@ -21,20 +21,7 @@ const {sqrt, abs, log} = Math
 const actx = getAudioCtx()
 
 let _tmp: any
-// const step = [3,5,7,8,10,12,14]
-// -------------[1,2,3,4,5 ,6 ,7 ]
-const tuneList = [
-  10, 12, 10, 7, 10, 7, 5, 3, -2, 0, 3, 5, 10, 7,
-  10, 12, 10, 7, 10, 7, 5, 3, -2, 0, 3, -2, 5, 3,
-  -2, 0, 2, 3, 5,
-  7, 7, 7, 5, 7, 12, 10, 7, 5, 7, 12, 10,
-  12, 14, 15, 10, 7, 10, 12, 10, 7, 5, 3, -2, 5, 3,
-]
-const tuneList2 = [
-  /*0, */0, 0, 0, 2, 3, 2, 3, 2, 3, 2,
-  0, 0, 0, 0, 2, 3, 2, 3, 2, 3, 2,
-  -2, -2, -2, -2, -2, 3, -2, 3, -2, 3, 5, 5,
-]
+
 
 export default Vue.extend({
   name: 'Main',
@@ -44,7 +31,7 @@ export default Vue.extend({
       squareSpeed: 'squareSpeed: ' + (0).toFixed(6).padStart(12, '_'),
       released: true,
       pluckInXDir: true,
-      tune: new Tune(tuneList, 0),
+      tune: new Tune(tunes['bach1'], 0),
       chordA: new Chord(-12)
     }
   },
