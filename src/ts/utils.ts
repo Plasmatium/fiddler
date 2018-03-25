@@ -1,3 +1,9 @@
+/**
+ * color defination:
+ * https://palettable.io/FF8800-FAF3B4-A8845B-5E485D-7155D9
+ * https://palettable.io/C5CFA9-9CDBB9-79EDEB-38A8C9-FA9B6B
+ */
+
 import { get2dCtx, getCV } from '@/ts/main-canvas'
 
 const {log, floor, PI} = Math
@@ -48,4 +54,14 @@ export class Tune {
     this.position++
     return next
   }
+}
+
+export function inArea (pt: Point, area: Square) {
+  if (pt.x <= area.x || pt.x >= area.x + area.w) {
+    return false
+  }
+  if (pt.y <= area.y || pt.y >= area.y + area.h) {
+    return false
+  }
+  return true
 }

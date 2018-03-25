@@ -14,5 +14,3 @@ export function get2dCtx () {
   if (!ctx) { throw Error('can not get 2d context') }
   return ctx
 }
-
-

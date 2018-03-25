@@ -15,6 +15,8 @@ import {getCV, get2dCtx} from '../ts/main-canvas'
 import {Chord, getAudioCtx} from '../ts/timbre'
 import {genFuncDrawCurve, drawCircle, Tune} from '../ts/utils'
 
+import {PluckArea} from '@/ts/pluck'
+
 const {sqrt, abs, log} = Math
 const actx = getAudioCtx()
 
@@ -38,6 +40,7 @@ export default Vue.extend({
   name: 'Main',
   data () {
     return {
+      oscStarted: false,
       squareSpeed: 'squareSpeed: ' + (0).toFixed(6).padStart(12, '_'),
       released: true,
       pluckInXDir: true,
@@ -51,116 +54,34 @@ export default Vue.extend({
     const cv = getCV()
     const ctx = get2dCtx()
 
-    cv.width = window.innerWidth * 0.95
-    cv.height = window.innerHeight * 0.95
-
-    /**
-     * handle chords
-     */
-    const {chordA} = this
-
-    /**
-     * handle touch event
-     */
-    const touchEnd$ = Observable.fromEvent(cv, 'touchend')
-    touchEnd$.subscribe((e) =>  {
-      const event = e as TouchEvent
-      this.released = true
-    })
-
-    const touchMove$ = Observable.fromEvent(cv, 'touchmove')
-    touchMove$.subscribe((e) => {
-      const event = e as TouchEvent
-      event.preventDefault()
-    })
-    cv.addEventListener('touchstart', (e) => {
-      // 如果还没开始播放，那么不能prevent，否则下面那个click就失效了
-      // 而之所以要用click来start，是因为iPad上的音乐start只能在click里正确触发
-      this.chordA.started && e.preventDefault()
-    })
+    // 0 点击启动振荡器
     cv.addEventListener('click', (e) => {
-      this.chordA.start()
-      console.log('osc start!')
+      // start osc here
+      this.oscStarted = true
     })
 
-    let newTouchStartPosition: Touch | null
-    const deltaMove$ = touchMove$
-    .pluck('touches')
-    .filter((touches) => {
-      // 如果处于释放状态，那么放弃emmit当前位置，并且置于非释放状态
-      if (this.released) {
-        this.released = false
-        newTouchStartPosition = (touches as TouchList)[0]
-        return false
-      }
-      _tmp = (touches as any)[0]
-      return true
+    // 1 禁用默认touch事件
+    cv.addEventListener('touchstart', (e) => {
+      this.oscStarted && e.preventDefault()
     })
-    .pairwise()
-    const velocity$ = deltaMove$.map((touchesX2) => {
-      const first = touchesX2[0] as TouchList
-      const second = touchesX2[1] as TouchList
+    cv.addEventListener('touchmove', (e) => { e.preventDefault() })
 
-      let pluckTouch0 = first[0]
-      let pluckTouch1 = second[0]
+    // 2 初始化弦区
+    cv.width = window.innerWidth
+    cv.height = window.innerHeight
+    const pluckArea = new PluckArea(null)
+    pluckArea.init()
 
-      if (newTouchStartPosition) {
-        pluckTouch0 = newTouchStartPosition
-        newTouchStartPosition = null
-      }
-      
-      // drawCircle(pluckTouch0.pageX, pluckTouch0.pageY, '#fff')
-      // drawCircle(pluckTouch1.pageX, pluckTouch1.pageY, '#84c')
+    // 3 分离finger和pluck
+    const fingers: any[] = []
+    const plucks: any[] = []
 
-      const vx = pluckTouch1.pageX - pluckTouch0.pageX
-      const vy = pluckTouch1.pageY - pluckTouch0.pageY
-
-      return {vx, vy}
-    })
-
-    let timerID = -1
-    const drawCurve = genFuncDrawCurve()
-    velocity$.pairwise().subscribe((velocities) => {
-      const v0 = velocities[0]
-      const v1 = velocities[1]
-
-      let redirect: boolean
-      if (this.pluckInXDir) {
-        redirect = (v0.vx * v1.vx < 0) || (v1.vx === 0 && v0.vx !== 0)
-      } else {
-        redirect = (v0.vy * v1.vy < 0) || (v1.vy === 0 && v0.vy !== 0)
-      }
-
-      const squareSpeed = this.pluckInXDir ? v1.vx * v1.vx : v1.vy * v1.vy
-
-      let intensity = squareSpeed / 30000 + 0.0003
-      let timeConstant = 0.4
-      let startTime = actx.currentTime
-      let fillStyle = '#48c'
-
-      if (!this.released && redirect) {
-        // 来回扯，应力没有释放，音断，音强增加
-        const switchSoft = (1 - (log(intensity) + 8.2) / 7.73) * 0.03 + 0.003
-        timeConstant = switchSoft
-        startTime += 0.01
-        chordA.silent(0.003)
-        fillStyle = '#c84'
-
-        const pitch = this.tune.nextChord()
-        console.log(intensity.toFixed(3), switchSoft.toFixed(3))
-        chordA.setPitch(pitch, switchSoft)
-      }
-      chordA.setAmp(intensity, startTime, timeConstant)
-      drawCurve(intensity, fillStyle)
-
-      this.squareSpeed = 'squareSpeed: ' + squareSpeed.toFixed(6).padStart(12, '_')
-      // 速度需要回落到0
-      window.clearTimeout(timerID)
-      timerID = window.setTimeout(() => {
-        this.squareSpeed = 'squareSpeed: ' + (0).toFixed(6).padStart(12, '_')
-        chordA.silent(0.01)
-        this.released = true
-      }, 50)
+    const touchmove$ = Observable.fromEvent(cv, 'touchmove')
+    touchmove$.subscribe((e) => {
+      const touchList = (e as TouchEvent).touches
+      Array.prototype.forEach.call(touchList, (touch: Touch) => {
+        
+      })
     })
   },
 })
